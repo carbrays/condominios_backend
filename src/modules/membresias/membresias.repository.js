@@ -1,7 +1,7 @@
 const { query } = require('../../config/db');
 
 class MembresiasRepository {
-  async listarPorCondominio(condominioId, { rol, estado = 'ACTIVO' }) {
+  async listarPorCondominio(condominioId, { rol, estado } = {}) {
     let sql = `
       SELECT m.id, m.usuario_id, m.condominio_id, m.rol_id, m.estado, m.fecha_inicio, m.fecha_fin,
              p.id as persona_id, p.ci, p.nombres, p.apellidos, p.email, p.telefono,
@@ -15,7 +15,7 @@ class MembresiasRepository {
     const params = [condominioId];
     let idx = 2;
 
-    if (estado) {
+    if (estado && estado !== 'TODOS') {
       sql += ` AND m.estado = $${idx++}`;
       params.push(estado);
     }
@@ -28,6 +28,14 @@ class MembresiasRepository {
 
     const { rows } = await query(sql, params);
     return rows;
+  }
+
+  async findById(id) {
+    const { rows } = await query(
+      `SELECT * FROM membresias WHERE id = $1 AND deleted_at IS NULL`,
+      [parseInt(id, 10)]
+    );
+    return rows[0] || null;
   }
 
   async findByUsuarioYCondominio(usuarioId, condominioId) {
@@ -66,7 +74,7 @@ class MembresiasRepository {
            deleted_by = CASE WHEN $1 = 'REVOCADO' THEN $3 ELSE deleted_by END
        WHERE id = $2
        RETURNING *;`,
-      [estado, id, deletedBy]
+      [estado, parseInt(id, 10), deletedBy]
     );
     return rows[0] || null;
   }

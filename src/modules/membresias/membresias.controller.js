@@ -13,9 +13,15 @@ class MembresiasController {
 
   async create(req, res, next) {
     try {
+      // Si es SUPER_ADMIN puede especificar un condominio_id diferente al activo.
+      // Para el resto de roles, se fuerza el condominio del contexto activo.
+      const condominioId = (req.rol === 'SUPER_ADMIN' && req.body.condominio_id)
+        ? parseInt(req.body.condominio_id, 10)
+        : req.condominioId;
+
       const payload = {
         ...req.body,
-        condominio_id: req.condominioId
+        condominio_id: condominioId
       };
       const nueva = await membresiasService.create(payload, req.user.usuario_id);
       return successResponse(res, nueva, 'Membresía asignada correctamente', 201);

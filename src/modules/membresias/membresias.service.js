@@ -26,7 +26,25 @@ class MembresiasService {
   }
 
   async updateEstado(id, estado, condominioId, usuarioOperadorId) {
-    const actualizada = await membresiasRepo.updateEstado(id, estado, usuarioOperadorId);
+    const membresiaId = parseInt(id, 10);
+    if (isNaN(membresiaId)) {
+      throw { statusCode: 400, message: 'ID de membresía inválido', code: 'INVALID_ID' };
+    }
+
+    if (!['ACTIVO', 'SUSPENDIDO', 'INACTIVO', 'REVOCADO'].includes(estado)) {
+      throw { statusCode: 400, message: 'Estado no válido', code: 'INVALID_STATUS' };
+    }
+
+    const membresiaActual = await membresiasRepo.findById(membresiaId);
+    if (!membresiaActual) {
+      throw { statusCode: 404, message: 'Membresía no encontrada', code: 'NOT_FOUND' };
+    }
+
+    if (String(membresiaActual.usuario_id) === String(usuarioOperadorId) && estado === 'SUSPENDIDO') {
+      throw { statusCode: 400, message: 'No puedes suspender tu propia membresía activa', code: 'CANNOT_SUSPEND_SELF' };
+    }
+
+    const actualizada = await membresiasRepo.updateEstado(membresiaId, estado, usuarioOperadorId);
     if (!actualizada) {
       throw { statusCode: 404, message: 'Membresía no encontrada', code: 'NOT_FOUND' };
     }
@@ -36,7 +54,7 @@ class MembresiasService {
       condominioId,
       accion: 'MEMBRESIA_ESTADO_CAMBIADO',
       entidad: 'membresias',
-      entidadId: id,
+      entidadId: membresiaId,
       datosNuevos: { estado }
     });
 
