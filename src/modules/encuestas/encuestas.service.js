@@ -101,6 +101,28 @@ class EncuestasService {
       throw err;
     }
   }
+
+  async cerrar(condominioId, id) {
+    const { rows } = await query(
+      `UPDATE encuestas SET estado = 'CERRADA' WHERE id = $1 AND condominio_id = $2 RETURNING *;`,
+      [id, condominioId]
+    );
+    if (!rows[0]) {
+      throw { statusCode: 404, message: 'Asamblea/Votación no encontrada', code: 'NOT_FOUND' };
+    }
+    return rows[0];
+  }
+
+  async eliminar(condominioId, id) {
+    const { rows } = await query(
+      `DELETE FROM encuestas WHERE id = $1 AND condominio_id = $2 RETURNING *;`,
+      [id, condominioId]
+    );
+    if (!rows[0]) {
+      throw { statusCode: 404, message: 'Asamblea/Votación no encontrada', code: 'NOT_FOUND' };
+    }
+    return rows[0];
+  }
 }
 
 const encuestasService = new EncuestasService();
@@ -128,6 +150,24 @@ class EncuestasController {
     try {
       const voto = await encuestasService.emitirVoto(req.condominioId, req.body, req.user.usuario_id);
       return successResponse(res, voto, 'Voto registrado exitosamente', 201);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async cerrar(req, res, next) {
+    try {
+      const cerrada = await encuestasService.cerrar(req.condominioId, req.params.id);
+      return successResponse(res, cerrada, 'Votación cerrada');
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async eliminar(req, res, next) {
+    try {
+      const eliminada = await encuestasService.eliminar(req.condominioId, req.params.id);
+      return successResponse(res, eliminada, 'Asamblea/Votación eliminada');
     } catch (error) {
       next(error);
     }

@@ -64,6 +64,14 @@ class ConserjeriaRepository {
     return rows[0] || null;
   }
 
+  async eliminarVisita(id, condominioId) {
+    const { rows } = await query(
+      `DELETE FROM visitas WHERE id = $1 AND condominio_id = $2 RETURNING *;`,
+      [id, condominioId]
+    );
+    return rows[0] || null;
+  }
+
   // --- PAQUETERÍA ---
   async listarPaqueteria(condominioId, { estado, unidadId, page = 1, limit = 50 }) {
     const offset = (page - 1) * limit;
@@ -128,6 +136,14 @@ class ConserjeriaRepository {
        WHERE id = $2 AND condominio_id = $3
        RETURNING *;`,
       [entregadoA, id, condominioId]
+    );
+    return rows[0] || null;
+  }
+
+  async eliminarPaquete(id, condominioId) {
+    const { rows } = await query(
+      `DELETE FROM paqueteria WHERE id = $1 AND condominio_id = $2 RETURNING *;`,
+      [id, condominioId]
     );
     return rows[0] || null;
   }

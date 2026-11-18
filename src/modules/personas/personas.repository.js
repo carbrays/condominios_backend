@@ -96,6 +96,18 @@ class PersonasRepository {
     );
     return rows[0] || null;
   }
+
+  async delete(id, usuarioId) {
+    const { rows } = await query(
+      `UPDATE personas
+       SET deleted_at = CURRENT_TIMESTAMP,
+           deleted_by = $2
+       WHERE id = $1 AND deleted_at IS NULL
+       RETURNING id;`,
+      [id, usuarioId]
+    );
+    return rows[0] || null;
+  }
 }
 
 module.exports = new PersonasRepository();

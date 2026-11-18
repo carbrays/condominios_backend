@@ -50,6 +50,15 @@ class PersonasController {
       next(error);
     }
   }
+
+  async delete(req, res, next) {
+    try {
+      await personasService.delete(req.params.id, req.user.usuario_id);
+      return successResponse(res, null, 'Persona eliminada exitosamente');
+    } catch (error) {
+      next(error);
+    }
+  }
 }
 
 module.exports = new PersonasController();

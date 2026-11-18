@@ -13,6 +13,7 @@ router.get('/', requirePermission('INCIDENCIA_VER'), incidenciasController.lista
 router.get('/:id', requirePermission('INCIDENCIA_VER'), incidenciasController.findById);
 router.post('/', requirePermission('INCIDENCIA_CREAR'), upload.single('fotografia'), handleUploadError, incidenciasController.crear);
 router.patch('/:id/estado', requirePermission('INCIDENCIA_GESTIONAR'), incidenciasController.actualizarEstado);
+router.delete('/:id', requirePermission('INCIDENCIA_GESTIONAR'), incidenciasController.eliminar);
 router.post('/:id/comentarios', upload.single('adjunto'), handleUploadError, incidenciasController.agregarComentario);
 
 module.exports = router;

@@ -35,6 +35,14 @@ class ReservasRepository {
     return rows[0];
   }
 
+  async deleteAreaComun(condominioId, areaId) {
+    const { rows } = await query(
+      `UPDATE areas_comunes SET activo = FALSE, updated_at = CURRENT_TIMESTAMP WHERE id = $1 AND condominio_id = $2 RETURNING id;`,
+      [areaId, condominioId]
+    );
+    return rows[0] || null;
+  }
+
   async listarReservas(condominioId, { areaId, fecha, estado, page = 1, limit = 50 }) {
     const offset = (page - 1) * limit;
     let sql = `
@@ -227,6 +235,18 @@ class ReservasService {
     emitToCondominio(condominioId, 'reserva.cancelada', reserva);
     return reserva;
   }
+
+  async deleteAreaComun(condominioId, areaId, usuarioId) {
+    const res = await reservasRepo.deleteAreaComun(condominioId, areaId);
+    if (!res) throw { statusCode: 404, message: 'Área común no encontrada', code: 'NOT_FOUND' };
+    await auditoriaService.registrar({
+      usuarioId,
+      accion: 'AREA_COMUN_ELIMINADA',
+      entidad: 'areas_comunes',
+      entidadId: areaId
+    });
+    return true;
+  }
 }
 
 const reservasService = new ReservasService();
@@ -246,6 +266,15 @@ class ReservasController {
     try {
       const area = await reservasService.createAreaComun(req.condominioId, req.body, req.user.usuario_id);
       return successResponse(res, area, 'Área común registrada con éxito', 201);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async deleteAreaComun(req, res, next) {
+    try {
+      await reservasService.deleteAreaComun(req.condominioId, req.params.id, req.user.usuario_id);
+      return successResponse(res, null, 'Área común dada de baja correctamente');
     } catch (error) {
       next(error);
     }

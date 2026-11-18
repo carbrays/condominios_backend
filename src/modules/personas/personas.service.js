@@ -75,6 +75,21 @@ class PersonasService {
 
     return actualizada;
   }
+
+  async delete(id, usuarioId) {
+    const anterior = await this.findById(id);
+    await personasRepo.delete(id, usuarioId);
+
+    await auditoriaService.registrar({
+      usuarioId,
+      accion: 'PERSONA_ELIMINADA',
+      entidad: 'personas',
+      entidadId: id,
+      datosAnteriores: anterior
+    });
+
+    return true;
+  }
 }
 
 module.exports = new PersonasService();

@@ -58,6 +58,15 @@ class ConserjeriaService {
     return salida;
   }
 
+  async eliminarVisita(id, condominioId) {
+    const eliminada = await conserjeriaRepo.eliminarVisita(id, condominioId);
+    if (!eliminada) {
+      throw { statusCode: 404, message: 'Registro de visita no encontrado', code: 'NOT_FOUND' };
+    }
+    emitToCondominio(condominioId, 'visita.eliminada', { id });
+    return eliminada;
+  }
+
   // --- PAQUETERÍA ---
   async listarPaqueteria(condominioId, query) {
     return conserjeriaRepo.listarPaqueteria(condominioId, query);
@@ -112,6 +121,15 @@ class ConserjeriaService {
     }
     emitToCondominio(condominioId, 'paquete.entregado', entregado);
     return entregado;
+  }
+
+  async eliminarPaquete(id, condominioId) {
+    const eliminado = await conserjeriaRepo.eliminarPaquete(id, condominioId);
+    if (!eliminado) {
+      throw { statusCode: 404, message: 'Paquete no encontrado', code: 'NOT_FOUND' };
+    }
+    emitToCondominio(condominioId, 'paquete.eliminado', { id });
+    return eliminado;
   }
 
   // --- BITÁCORA ---

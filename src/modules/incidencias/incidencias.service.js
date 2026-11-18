@@ -123,6 +123,14 @@ class IncidenciasRepository {
     );
     return rows[0];
   }
+
+  async delete(id, condominioId) {
+    const { rows } = await query(
+      `DELETE FROM incidencias WHERE id = $1 AND condominio_id = $2 RETURNING *;`,
+      [id, condominioId]
+    );
+    return rows[0] || null;
+  }
 }
 
 const incidenciasRepo = new IncidenciasRepository();
@@ -210,6 +218,24 @@ class IncidenciasService {
     emitToCondominio(condominioId, 'incidencia.comentario_agregado', { incidenciaId: id, comentario: nuevoComentario });
     return nuevoComentario;
   }
+
+  async eliminar(id, condominioId, operadorId) {
+    const anterior = await this.findById(id, condominioId);
+    const eliminada = await incidenciasRepo.delete(id, condominioId);
+    if (!eliminada) {
+      throw { statusCode: 404, message: 'Incidencia no encontrada', code: 'NOT_FOUND' };
+    }
+    emitToCondominio(condominioId, 'incidencia.eliminada', { id });
+    await auditoriaService.registrar({
+      usuarioId: operadorId,
+      condominioId,
+      accion: 'INCIDENCIA_ELIMINADA',
+      entidad: 'incidencias',
+      entidadId: id,
+      datosAnteriores: anterior
+    });
+    return eliminada;
+  }
 }
 
 const incidenciasService = new IncidenciasService();
@@ -258,6 +284,15 @@ class IncidenciasController {
     try {
       const comentario = await incidenciasService.agregarComentario(req.params.id, req.condominioId, req.body, req.file, req.user.usuario_id);
       return successResponse(res, comentario, 'Comentario agregado exitosamente', 201);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async eliminar(req, res, next) {
+    try {
+      const eliminada = await incidenciasService.eliminar(req.params.id, req.condominioId, req.user.usuario_id);
+      return successResponse(res, eliminada, 'Incidencia eliminada con éxito');
     } catch (error) {
       next(error);
     }

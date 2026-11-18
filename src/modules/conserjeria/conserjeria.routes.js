@@ -13,11 +13,13 @@ router.use(requireTenant);
 router.get('/visitas', requirePermission('CONSERJERIA_VER'), conserjeriaController.listarVisitas);
 router.post('/visitas', requirePermission('CONSERJERIA_GESTIONAR'), conserjeriaController.registrarVisita);
 router.patch('/visitas/:id/salida', requirePermission('CONSERJERIA_GESTIONAR'), conserjeriaController.registrarSalidaVisita);
+router.delete('/visitas/:id', requirePermission('CONSERJERIA_GESTIONAR'), conserjeriaController.eliminarVisita);
 
 // Paquetería
 router.get('/paqueteria', requirePermission('CONSERJERIA_VER'), conserjeriaController.listarPaqueteria);
 router.post('/paqueteria', requirePermission('CONSERJERIA_GESTIONAR'), upload.single('fotografia'), handleUploadError, conserjeriaController.registrarPaquete);
 router.patch('/paqueteria/:id/entregar', requirePermission('CONSERJERIA_GESTIONAR'), conserjeriaController.entregarPaquete);
+router.delete('/paqueteria/:id', requirePermission('CONSERJERIA_GESTIONAR'), conserjeriaController.eliminarPaquete);
 
 // Bitácora
 router.get('/bitacora', requirePermission('CONSERJERIA_VER'), conserjeriaController.listarBitacora);

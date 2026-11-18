@@ -33,6 +33,15 @@ class ConserjeriaController {
     }
   }
 
+  async eliminarVisita(req, res, next) {
+    try {
+      const eliminada = await conserjeriaService.eliminarVisita(req.params.id, req.condominioId);
+      return successResponse(res, eliminada, 'Registro de visita eliminado');
+    } catch (error) {
+      next(error);
+    }
+  }
+
   // Paquetería
   async listarPaqueteria(req, res, next) {
     try {
@@ -59,6 +68,15 @@ class ConserjeriaController {
       const { entregado_a } = req.body;
       const entregado = await conserjeriaService.entregarPaquete(req.params.id, req.condominioId, entregado_a || 'Destinatario');
       return successResponse(res, entregado, 'Paquete marcado como entregado');
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async eliminarPaquete(req, res, next) {
+    try {
+      const eliminado = await conserjeriaService.eliminarPaquete(req.params.id, req.condominioId);
+      return successResponse(res, eliminado, 'Registro de paquete eliminado');
     } catch (error) {
       next(error);
     }

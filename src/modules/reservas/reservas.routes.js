@@ -10,6 +10,7 @@ router.use(requireTenant);
 
 router.get('/areas', reservasController.getAreasComunes);
 router.post('/areas', requirePermission('CONDOMINIO_EDITAR'), reservasController.createAreaComun);
+router.delete('/areas/:id', requirePermission('CONDOMINIO_EDITAR'), reservasController.deleteAreaComun);
 
 router.get('/', requirePermission('RESERVA_VER'), reservasController.listar);
 router.post('/', requirePermission('RESERVA_CREAR'), reservasController.crear);

@@ -11,5 +11,6 @@ router.get('/ci/:ci', requirePermission('PERSONA_VER'), personasController.findB
 router.get('/:id', requirePermission('PERSONA_VER'), personasController.findById);
 router.post('/', requirePermission('PERSONA_CREAR'), personasController.create);
 router.put('/:id', requirePermission('PERSONA_EDITAR'), personasController.update);
+router.delete('/:id', requirePermission('PERSONA_EDITAR'), personasController.delete);
 
 module.exports = router;

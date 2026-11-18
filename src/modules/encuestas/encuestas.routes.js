@@ -11,5 +11,7 @@ router.use(requireTenant);
 router.get('/', requirePermission('ENCUESTA_VER'), encuestasController.listar);
 router.post('/', requirePermission('ENCUESTA_CREAR'), encuestasController.crear);
 router.post('/votar', requirePermission('ENCUESTA_VOTAR'), encuestasController.votar);
+router.patch('/:id/cerrar', requirePermission('ENCUESTA_CREAR'), encuestasController.cerrar);
+router.delete('/:id', requirePermission('ENCUESTA_CREAR'), encuestasController.eliminar);
 
 module.exports = router;

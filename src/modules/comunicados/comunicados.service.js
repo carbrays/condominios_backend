@@ -44,6 +44,14 @@ class ComunicadosRepository {
     );
     return rows[0];
   }
+
+  async archivar(id, condominioId) {
+    const { rows } = await query(
+      `UPDATE comunicados SET estado = 'ARCHIVADO', updated_at = CURRENT_TIMESTAMP WHERE id = $1 AND condominio_id = $2 RETURNING id;`,
+      [id, condominioId]
+    );
+    return rows[0] || null;
+  }
 }
 
 const comunicadosRepo = new ComunicadosRepository();
@@ -92,6 +100,19 @@ class ComunicadosService {
 
     return comunicado;
   }
+
+  async archivar(condominioId, id, usuarioId) {
+    const res = await comunicadosRepo.archivar(id, condominioId);
+    if (!res) throw { statusCode: 404, message: 'Comunicado no encontrado', code: 'NOT_FOUND' };
+    await auditoriaService.registrar({
+      usuarioId,
+      condominioId,
+      accion: 'COMUNICADO_ARCHIVADO',
+      entidad: 'comunicados',
+      entidadId: id
+    });
+    return true;
+  }
 }
 
 const comunicadosService = new ComunicadosService();
@@ -112,6 +133,15 @@ class ComunicadosController {
     try {
       const comunicado = await comunicadosService.publicar(req.condominioId, req.body, req.file, req.user.usuario_id);
       return successResponse(res, comunicado, 'Comunicado publicado exitosamente', 201);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async archivar(req, res, next) {
+    try {
+      await comunicadosService.archivar(req.condominioId, req.params.id, req.user.usuario_id);
+      return successResponse(res, null, 'Comunicado archivado exitosamente');
     } catch (error) {
       next(error);
     }

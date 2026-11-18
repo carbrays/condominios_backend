@@ -11,5 +11,6 @@ router.use(requireTenant);
 
 router.get('/', requirePermission('COMUNICADO_VER'), comunicadosController.listar);
 router.post('/', requirePermission('COMUNICADO_CREAR'), upload.single('adjunto'), handleUploadError, comunicadosController.publicar);
+router.delete('/:id', requirePermission('COMUNICADO_CREAR'), comunicadosController.archivar);
 
 module.exports = router;
